@@ -1,0 +1,96 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x", "debian-openssl-3.0.x"]
+}
+
+model Tool {
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  name            String
+  category        String
+  code            String    // e.g. LAB-NET-01
+  location        String    // e.g. Meja Praktik Jaringan 02
+  imageUrl        String?
+  description     String
+  functionSummary String
+  specs           String[]  // Spesifikasi teknis
+
+  // 2. Pelajari
+  videoUrl        String?
+  moduleSummary   String?
+  moduleContent   String?
+
+  // 3. Cara Menggunakan
+  steps           UsageStep[]
+
+  // 4. Coba Sendiri
+  practiceTasks   PracticeTask[]
+
+  // 5. Tes Pemahaman
+  quizzes         QuizQuestion[]
+
+  // 6. Troubleshooting
+  troubleshoots   TroubleshootItem[]
+
+  // 7. Challenge
+  challenges      ChallengeItem[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model UsageStep {
+  id          String   @id @default(cuid())
+  toolId      String
+  tool        Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  stepNumber  Int
+  title       String
+  description String
+  tip         String?
+}
+
+model PracticeTask {
+  id             String   @id @default(cuid())
+  toolId         String
+  tool           Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  order          Int
+  title          String
+  instruction    String
+  expectedResult String?
+}
+
+model QuizQuestion {
+  id            String   @id @default(cuid())
+  toolId        String
+  tool          Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  question      String
+  options       String[]
+  correctAnswer Int
+  explanation   String?
+}
+
+model TroubleshootItem {
+  id          String   @id @default(cuid())
+  toolId      String
+  tool        Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  problem     String
+  symptom     String?
+  solution    String
+  preventive  String?
+}
+
+model ChallengeItem {
+  id          String   @id @default(cuid())
+  toolId      String
+  tool        Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  title       String
+  level       String   // e.g. "Pemula", "Menengah", "Mahir"
+  description String
+  criteria    String[]
+}
